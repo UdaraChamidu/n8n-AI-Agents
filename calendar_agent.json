@@ -1,0 +1,335 @@
+{
+  "name": "calendar_agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "You are a Google Calendar assistant. You have access to tools: Get Events, Create Event, Create Event with Attendee tool, Google Contact Tool, and Think Tool.\n\nAlways follow this process:\n1. Read the user’s request and detect their intent (schedule, invite, check availability, etc.).\n2. If info is missing, use the Think Tool to reason and clarify the task.\n3. If names (not emails) are used, use the Google Contact Tool to find their emails.\n4. Choose the correct calendar tool:\n   - Use Create Event for personal events.\n   - Use Create Event with Attendees when others are involved.\n   - Use Get Events to list or search events.\n5. After executing, summarize what was done in user-friendly language.\nAlways ask for time, date, and participants if not specified.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "b071c28d-fe0a-478c-a7b6-b5f55f1bfa3b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "96d81e1b-fd42-40d5-a39f-899f917a4060",
+      "name": "When Executed by Another Workflow",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        140,
+        200
+      ],
+      "id": "46dd2a3b-8c9e-493b-97e3-60d64f7fcc81",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "PoAGUReTfyn4xl4u",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "fields": [
+          "addresses",
+          "names"
+        ],
+        "useQuery": "={{ $json.query }}",
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "rawData": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('RAW_Data', ``, 'boolean') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleContactsTool",
+      "typeVersion": 1,
+      "position": [
+        860,
+        240
+      ],
+      "id": "1f336b1c-4f16-455b-854b-b3d46e601b57",
+      "name": "Google Contacts",
+      "credentials": {
+        "googleContactsOAuth2Api": {
+          "id": "SslZZfWaTKVh5HwZ",
+          "name": "Google Contacts account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "=Use this tool to create a new event in the Google Calendar. please try to understand the start time, end time and title from the user provide details.",
+        "calendar": {
+          "__rl": true,
+          "value": "www.udarachamidu123@gmail.com",
+          "mode": "id"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "useDefaultReminders": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Use_Default_Reminders', ``, 'boolean') }}",
+        "additionalFields": {
+          "description": "={{ $json.query }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        280,
+        240
+      ],
+      "id": "9ca95915-5e82-473c-8663-363b15a5dc32",
+      "name": "Create event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "uBqBZNh2OtibNUEU",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "invite people using google contacts. find the name or email address to invite.",
+        "calendar": {
+          "__rl": true,
+          "value": "www.udarachamidu123@gmail.com",
+          "mode": "list",
+          "cachedResultName": "www.udarachamidu123@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "useDefaultReminders": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Use_Default_Reminders', ``, 'boolean') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        240
+      ],
+      "id": "e74227ea-743d-4af5-80bd-ef2932e138ef",
+      "name": "Create event with attendee",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "uBqBZNh2OtibNUEU",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "=Use this tool to update an existing event. For examples change the title, change start time, change end time, change or add friends to the event. consider again, this tool is only for updating current events. not for create new events.",
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "www.udarachamidu123@gmail.com",
+          "mode": "list",
+          "cachedResultName": "www.udarachamidu123@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Time', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End_Time', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        500,
+        240
+      ],
+      "id": "2cf05f3f-e101-402d-840b-75f17d97c180",
+      "name": "update event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "uBqBZNh2OtibNUEU",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create an event in Google Calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "www.udarachamidu123@gmail.com",
+          "mode": "id",
+          "__regex": "(^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        380,
+        240
+      ],
+      "id": "cb552512-a71e-4c18-ae38-7039f7e27324",
+      "name": "Get events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "uBqBZNh2OtibNUEU",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "={{ $json.query }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        760,
+        240
+      ],
+      "id": "ad2cfc71-e516-49dd-a1ec-a2cd73749ffe",
+      "name": "Think"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "invite chamiduudara321@gmail.com from google contacts to the playing elle game event on 2025.06.17"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Contacts": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create event with attendee": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "30a393a3-9881-4ee5-842d-6868aaf5f438",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "63eaa31a605200dfb5ed721c16973a02693c719fd52200c5c4c2daed264bb962"
+  },
+  "id": "Os9qkbIgPQkEu2nG",
+  "tags": []
+}

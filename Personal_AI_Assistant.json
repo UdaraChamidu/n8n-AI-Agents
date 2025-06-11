@@ -1,0 +1,195 @@
+{
+  "name": "Personal_AI_Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "133d4ac1-da39-4eb5-be04-3796003c650b",
+      "name": "When chat message received",
+      "webhookId": "d0239e11-05fe-48af-987f-6c980acc597a"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "d0e9fa93-16ce-4ec1-a372-d6d4d157825a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        220
+      ],
+      "id": "525ec4cf-74cf-4f90-8ba7-ab97fd1c2cd8",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "PoAGUReTfyn4xl4u",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        220
+      ],
+      "id": "398332e7-bf12-4058-ae8d-2236615e323e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "call this tool for all email related tasks",
+        "workflowId": {
+          "__rl": true,
+          "value": "P7R1jF5IdfBPzAsw",
+          "mode": "list",
+          "cachedResultName": "Email_Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        220
+      ],
+      "id": "82afb9c0-0fb8-4362-9082-de69696c1dad",
+      "name": "Email tool"
+    },
+    {
+      "parameters": {
+        "description": "call this tool to execute calendar related tasks",
+        "workflowId": {
+          "__rl": true,
+          "value": "Os9qkbIgPQkEu2nG",
+          "mode": "list",
+          "cachedResultName": "calendar_agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        580,
+        220
+      ],
+      "id": "11b6f543-af3c-445d-ae98-c964be9db206",
+      "name": "Calender tool"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calender tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8c658cd4-6e38-4f13-a615-fe7dc6dcc198",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "63eaa31a605200dfb5ed721c16973a02693c719fd52200c5c4c2daed264bb962"
+  },
+  "id": "bLXaKcuyRBDaxlGP",
+  "tags": []
+}

@@ -1,0 +1,968 @@
+{
+  "name": "My workflow copy",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -520,
+        280
+      ],
+      "id": "a8869fa3-ada3-4154-b626-dbeb085efaeb",
+      "name": "Telegram Trigger",
+      "webhookId": "fef23b8b-2a01-426e-9ff4-4ed22a926f8d",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=# ROLE\nYou are a friendly and helpful assistant called (Your Agent's Name), you are a personal assistance to (Your Name)\n\n#ADDITIONAL INFORMATION\nYou are currently chatting with {{ $('Telegram Trigger').item.json.message.from.first_name }}.\n\nThe current date and time is {{ $now }}\n\n# TOOLS\n\n## Read Emails\nUse this tools to retrieve unread emails.\n\n## Send Emails\nUse this tool to send emails. This tool requires the reciepent email, the email subject and body text.\n\n## Get Event\nUse this tool to retieve events from Google Calender.\n\n## Create Event\nUse this tool create Google Calendar events.\n\n## Get Weather\nUse this tool to get current weather details for a city.\nYou must provide a \"location\" like \"Colombo\" or \"London\".\n\n## Get Crypto Price\nUse this tool to get the current price of any cryptocurrency.\nYou must provide:\n- \"coin\": the cryptocurrency name or id (e.g. bitcoin, ethereum)\n- \"currency\": the fiat currency to convert to (e.g. usd, lkr, eur)\n\n# Github Tool\nUse this tool to see my github repository. \nYou must provide:\n- file names in the repository.\n- number of files.\n- file formats (like .py, .json)\n- other general details\n\n# code tool\nuse this tool for coding. \nYou must provide:\n- codes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        480,
+        280
+      ],
+      "id": "08c62c68-aaea-4ddd-a07e-f4c33aa441af",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        260,
+        500
+      ],
+      "id": "1095cc32-cb70-417a-a4ae-a05aa6214bde",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Psbw9TPc9wKYxJbo",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.text}}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        500
+      ],
+      "id": "e933d8a1-37ba-4b67-9354-6e971c2a85c4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        240
+      ],
+      "id": "febfddee-6b50-4f08-bd9d-fccb4debc40e",
+      "name": "Telegram",
+      "webhookId": "aca74869-efb6-4a79-aaa9-f92a22074d68",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "bff07e7f-86f9-4e39-bbf6-b8ced6831240"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ac569a27-4af2-4cdd-82b0-1942608cf4a0",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "290e5ab4-b7e4-44c1-83f6-e689a84a5c83",
+                    "leftValue": "={{ $json.message.photo }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -300,
+        280
+      ],
+      "id": "64333f0a-e6dd-4b5d-bbbf-34655162d1ed",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -40,
+        180
+      ],
+      "id": "ff9f9b4c-9478-4183-9972-180e747bdd64",
+      "name": "Get Audio",
+      "webhookId": "716181ae-9f25-4400-bd13-9995aaf0df41",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        140,
+        180
+      ],
+      "id": "66a2fd64-c77b-45c5-a5e8-30936fc57350",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "Psbw9TPc9wKYxJbo",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e9671bd5-89c3-4a82-bb76-757baaaa221f",
+              "name": "text",
+              "value": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -40,
+        360
+      ],
+      "id": "8f517975-0f07-4dd6-adf1-b04207bfb480",
+      "name": "Agent input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5d9ce80b-0f5c-4f48-ae9e-92a68c6b7373",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        280
+      ],
+      "id": "303e8f78-eedd-47b2-8911-3c73db34045d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "={{ $json.output }}",
+        "voice": "echo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1200,
+        60
+      ],
+      "id": "cb5824d5-43bc-40c6-9bcb-9f39b1028a30",
+      "name": "Generate Audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "Psbw9TPc9wKYxJbo",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        60
+      ],
+      "id": "78aad921-1a04-4826-ad86-466435bf8972",
+      "name": "Telegram1",
+      "webhookId": "89d7b129-49fb-4ab4-9639-316361a13908",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.photo[1].file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -40,
+        0
+      ],
+      "id": "05899ec8-2c81-40f8-8f92-be76aa900191",
+      "name": "Download Image",
+      "webhookId": "f3831677-a29f-4e7e-82b2-73f488c631ff",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "text": "={{ $('Telegram Trigger').item.json.message.caption || \"Describe Image\" }}",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        440,
+        0
+      ],
+      "id": "f96c9257-6284-452e-9a4a-2cb95f1ece79",
+      "name": "Analyze Image",
+      "credentials": {
+        "openAiApi": {
+          "id": "Psbw9TPc9wKYxJbo",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItem = items[0];\nconst extension = inputItem.binary.data.fileExtension;\ninputItem.binary.data.mimeType = `image/${extension}`;\nreturn inputItem;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "672bf402-2fe0-4447-8f40-416ebd26489f",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d235d520-5c3b-488e-9bf1-cfcbebd93c24",
+              "name": "output",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        0
+      ],
+      "id": "7bd23798-8fb7-4a8f-8761-200f19c0f8a7",
+      "name": "Format Image Output"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 5,
+        "filters": {
+          "labelIds": [
+            "INBOX",
+            "UNREAD"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        560,
+        500
+      ],
+      "id": "13c0ebdd-1e06-4250-827a-57aca05bb9ab",
+      "name": "Read Email",
+      "webhookId": "59e0a95f-5f3a-4cdc-bdf5-c9e09c1678a6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jlGurSrwAaeprry3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $fromAI('email_address', 'The recipient email address') }}",
+        "subject": "={{ $fromAI('email_subject', 'The email subject line') }}",
+        "emailType": "text",
+        "message": "={{ $fromAI('email_body', 'The email body') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        500
+      ],
+      "id": "a50887fa-a0dd-41e6-a923-1ff4ac13a192",
+      "name": "Send Email",
+      "webhookId": "3549d1ae-af20-4cd3-b78f-06f40e195f5a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jlGurSrwAaeprry3",
+          "name": "Gmail account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "www.udarachamidu123@gmail.com",
+          "mode": "list",
+          "cachedResultName": "www.udarachamidu123@gmail.com"
+        },
+        "start": "={{ $fromAI('start') }}",
+        "end": "={{ $fromAI('end') }}",
+        "additionalFields": {
+          "summary": "={{ $fromAI('email_title') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        760,
+        500
+      ],
+      "id": "dae092b9-df72-4542-b8a8-e790ee90e563",
+      "name": "Create Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "b9YnNUca2vBfTPNf",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "=www.udarachamidu123@gmail.com",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        860,
+        500
+      ],
+      "id": "492afc3b-e663-4ba3-9f13-2843993ea75d",
+      "name": "Get Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "b9YnNUca2vBfTPNf",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.openweathermap.org/data/2.5/weather?q={{$fromAI(\"location\", \"Location name\")}}&appid=244ec972f4733abe234a17303f291e91&units=metric",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        500
+      ],
+      "id": "0f7aceb6-9ff7-49fb-b01f-06579d1c2fb3",
+      "name": "Weather Tool"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1060,
+        500
+      ],
+      "id": "4710b29b-48ad-4c68-8c78-ea02bb3db2a5",
+      "name": "BTC Price Tool"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        100,
+        700
+      ],
+      "id": "3d3b4662-d821-4769-8acc-5ea39eb24703",
+      "name": "Send template",
+      "webhookId": "a23889fe-3d6c-4ebd-8816-07b8c9fa9f43"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait"
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        300,
+        700
+      ],
+      "id": "5fcd005c-1e6e-488a-acc7-e9cded99b2db",
+      "name": "Create channel",
+      "webhookId": "efe2f4a2-464b-43db-8856-bd7b506e76ed"
+    },
+    {
+      "parameters": {},
+      "type": "@brave/n8n-nodes-brave-search.braveSearch",
+      "typeVersion": 1,
+      "position": [
+        520,
+        700
+      ],
+      "id": "906a9557-a502-4f97-bfb0-c00f25d0766f",
+      "name": "Brave Search"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.linkedInTool",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        500
+      ],
+      "id": "df51ce20-5f86-4104-9a43-88332249ddcc",
+      "name": "Create a post in LinkedIn"
+    },
+    {
+      "parameters": {
+        "language": "python"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        1180,
+        500
+      ],
+      "id": "f460c721-8975-4330-a7b4-9903daa6ca3b",
+      "name": "Code Tool"
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "owner": {
+          "__rl": true,
+          "value": "=https://github.com/UdaraChamidu",
+          "mode": "url"
+        }
+      },
+      "type": "n8n-nodes-base.githubTool",
+      "typeVersion": 1.1,
+      "position": [
+        1420,
+        500
+      ],
+      "id": "647c4361-86e4-44cc-a288-f6243bdbb69f",
+      "name": "Github Tool",
+      "webhookId": "ac7afeab-e463-4246-b0e4-b0bc96a3e179",
+      "credentials": {
+        "githubApi": {
+          "id": "4YBVm6aZSg8NPMZ6",
+          "name": "GitHub account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agent input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Audio": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Generate Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Audio": {
+      "main": [
+        [
+          {
+            "node": "Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Analyze Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Image": {
+      "main": [
+        [
+          {
+            "node": "Format Image Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Image Output": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BTC Price Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send template": {
+      "main": [
+        [
+          {
+            "node": "Create channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create channel": {
+      "main": [
+        [
+          {
+            "node": "Brave Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a post in LinkedIn": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Github Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "54f1dbd5-5e67-4049-9330-6594f906acd0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f79746b4424f8d5d6a4a18a57f32b7f1e0ada6adce10eea0fa00a1f8c7fe5e12"
+  },
+  "id": "YdU86ukAwfBoMRwD",
+  "tags": []
+}

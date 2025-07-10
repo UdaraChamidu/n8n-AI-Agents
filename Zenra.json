@@ -1,0 +1,1193 @@
+{
+  "name": "Zenra",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -500,
+        340
+      ],
+      "id": "b5699a38-d0e7-412c-8363-38c8f0a8d3b3",
+      "name": "Telegram Trigger",
+      "webhookId": "29ac4a37-69a7-4920-978b-1c7fb23876ef",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.text || $json.caption || \"PDF uploaded. What do you want me to do with it?\" }}",
+        "options": {
+          "systemMessage": "=# ROLE\nYou are a friendly and helpful assistant called Zenra , you are a personal assistance to udara.\n\n#ADDITIONAL INFORMATION\nYou are currently chatting with {{ $('Telegram Trigger').item.json.message.from.first_name }}.\n\nThe current date and time is {{ $now }}\n\n\n\n# TOOLS\n\n## Read Emails\nUse this tools to retrieve unread emails.\n\n## Send Emails\nUse this tool to send emails. This tool requires the reciepent email, the email subject and body text.\n\n## Get Event\nUse this tool to retieve events from Google Calender.\n\n## Create Event\nUse this tool create Google Calendar events.\n\n## Get Weather\nUse this tool to get current weather details for a city.\nYou must provide a \"location\" like \"Colombo\" or \"London\".\n\n## Get Crypto Price\nUse this tool to get the current price of any cryptocurrency.\nYou must provide:\n- \"coin\": the cryptocurrency name or id (e.g. bitcoin, ethereum)\n- \"currency\": the fiat currency to convert to (e.g. usd, lkr, eur)\n\n# Github Tool\nUse this tool to see my github repository. \nYou must provide:\n- file names in the repository.\n- number of files.\n- file formats (like .py, .json)\n- other general details\n\n# code tool\nuse this tool for coding. \nYou must provide:\n- codes\n\n## LinkedIn Tool\nuse this tool when LinkedIn access needed.\nYou must do:\n- make posts according to user providing details\n\n## Drive upload Tool\nuse this tool to upload user input images, vides, audios or pdfs to upload into google drive.\nYou must do:\n- upload into the drive"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        520,
+        560
+      ],
+      "id": "35745be3-4935-4f2a-a4ab-f7837867c25d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        100,
+        820
+      ],
+      "id": "5b1385e2-00c9-4ad4-b568-0c85349b8b14",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "Psbw9TPc9wKYxJbo",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=={{ $json.text || $json.caption || \"PDF uploaded. What do you want me to do with it?\" }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        820
+      ],
+      "id": "811409f2-7ae3-4dbb-b6a2-4749791a31c6",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "bff07e7f-86f9-4e39-bbf6-b8ced6831240"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ac569a27-4af2-4cdd-82b0-1942608cf4a0",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "290e5ab4-b7e4-44c1-83f6-e689a84a5c83",
+                    "leftValue": "={{ $json.message.photo }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "50b14142-410c-4100-9aca-ad3756c39d1e",
+                    "leftValue": "={{ $json.message.document.mime_type === \"application/pdf\" }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -300,
+        320
+      ],
+      "id": "89df0cee-2aff-4127-a7b8-55513809361f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        20,
+        400
+      ],
+      "id": "1d8f4c9d-690a-45e7-a4bc-a8585a8f3e8d",
+      "name": "Get Audio",
+      "webhookId": "27b457ba-d68a-47cf-80ab-a217a6a4a675",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        200,
+        420
+      ],
+      "id": "dbbec6d3-8822-4726-a5ed-751d4057ec6c",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "Psbw9TPc9wKYxJbo",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e9671bd5-89c3-4a82-bb76-757baaaa221f",
+              "name": "text",
+              "value": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        580
+      ],
+      "id": "1bbb06e0-0a53-43b0-b6ff-5d56b232630f",
+      "name": "Agent input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5d9ce80b-0f5c-4f48-ae9e-92a68c6b7373",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.voice.file_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        560
+      ],
+      "id": "8b38afa9-3b68-4ce8-a3e7-854120c152a8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "={{ $json.output }}",
+        "voice": "echo",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1120,
+        300
+      ],
+      "id": "7bc99287-2ea9-4253-bb60-c1069f80226a",
+      "name": "Generate Audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "Psbw9TPc9wKYxJbo",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        380
+      ],
+      "id": "bbeedb91-6c80-4e3e-919f-5be1ed617292",
+      "name": "Telegram1",
+      "webhookId": "819802e2-663a-412b-8c7a-df4044a5b351",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.photo[1].file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        100,
+        240
+      ],
+      "id": "8a01bda7-47e3-458a-9b8e-72426e8709a9",
+      "name": "Download Image",
+      "webhookId": "90c976e6-43de-4d2a-afe0-52b764e11ce5",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "text": "={{ $('Telegram Trigger').item.json.message.caption || \"Describe Image\" }}",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        580,
+        360
+      ],
+      "id": "3fb76259-0afd-4bcf-90a4-e2c53386672d",
+      "name": "Analyze Image",
+      "credentials": {
+        "openAiApi": {
+          "id": "Psbw9TPc9wKYxJbo",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputItem = items[0];\nconst extension = inputItem.binary.data.fileExtension;\ninputItem.binary.data.mimeType = `image/${extension}`;\nreturn inputItem;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        360
+      ],
+      "id": "bd8c6356-291c-4afb-ac62-a0bad35206c2",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d235d520-5c3b-488e-9bf1-cfcbebd93c24",
+              "name": "output",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        780,
+        360
+      ],
+      "id": "dc13e33a-7429-4bee-b17b-f02f197b8f39",
+      "name": "Format Image Output"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 5,
+        "filters": {
+          "labelIds": [
+            "INBOX",
+            "UNREAD"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        820
+      ],
+      "id": "76c18947-8d76-4885-9acf-637e38c9773c",
+      "name": "Read Email",
+      "webhookId": "bc6af961-29c9-4fb8-b913-73cfe15f86af",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jlGurSrwAaeprry3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $fromAI('email_address', 'The recipient email address') }}",
+        "subject": "={{ $fromAI('email_subject', 'The email subject line') }}",
+        "emailType": "text",
+        "message": "={{ $fromAI('email_body', 'The email body') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        500,
+        820
+      ],
+      "id": "64ecf6ec-abc5-40ac-985f-a2be502f1dd5",
+      "name": "Send Email",
+      "webhookId": "75a07380-282f-4b63-9c76-bb5c29308e9a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jlGurSrwAaeprry3",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "www.udarachamidu123@gmail.com",
+          "mode": "list",
+          "cachedResultName": "www.udarachamidu123@gmail.com"
+        },
+        "start": "={{ $fromAI('start') }}",
+        "end": "={{ $fromAI('end') }}",
+        "additionalFields": {
+          "summary": "={{ $fromAI('email_title') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        600,
+        820
+      ],
+      "id": "24c0b242-534b-4d7d-88c8-ca0ab93b6dad",
+      "name": "Create Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "b9YnNUca2vBfTPNf",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "=www.udarachamidu123@gmail.com",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        700,
+        820
+      ],
+      "id": "c83e8d5c-049d-48e9-b78d-1a81baca9349",
+      "name": "Get Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "b9YnNUca2vBfTPNf",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.openweathermap.org/data/2.5/weather?q={{$fromAI(\"location\", \"Location name\")}}&appid=244ec972f4733abe234a17303f291e91&units=metric",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        820
+      ],
+      "id": "0e6a8192-1b64-4996-8102-b9b69cf62967",
+      "name": "Weather Tool"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        920,
+        820
+      ],
+      "id": "96087699-b6c7-448e-ba9a-b70ce7e85c42",
+      "name": "BTC Price Tool"
+    },
+    {
+      "parameters": {
+        "language": "python"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        1040,
+        820
+      ],
+      "id": "729d0a54-7a17-408e-873f-e8147dae97c2",
+      "name": "Code Tool"
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "owner": {
+          "__rl": true,
+          "value": "=https://github.com/UdaraChamidu",
+          "mode": "url"
+        }
+      },
+      "type": "n8n-nodes-base.githubTool",
+      "typeVersion": 1.1,
+      "position": [
+        1160,
+        820
+      ],
+      "id": "4cd68ce6-99d4-4d64-aee6-65e8189575d9",
+      "name": "Github Tool",
+      "webhookId": "e6ae2a4f-1473-4743-b85f-dda3f7d8cd5f",
+      "credentials": {
+        "githubApi": {
+          "id": "4YBVm6aZSg8NPMZ6",
+          "name": "GitHub account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Input_Data_Field_Name', ``, 'string') }}",
+        "name": "=my file name",
+        "driveId": {
+          "__rl": true,
+          "value": "={{ $fromAI('Parent_Drive', ``, 'string') }}",
+          "mode": "id"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $fromAI('Parent_Folder', ``, 'string') }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        1280,
+        820
+      ],
+      "id": "6ee992b3-8876-4ce9-88ed-5d78347e7f1c",
+      "name": "Upload Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "qaGUJMFlCj3fCKX3",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an assistant that answers questions based on the following document.\n\nDocument:\n{{ $json.data }}\n\nQuestion:\n{{ $json.caption }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1080,
+        100
+      ],
+      "id": "fb0238cc-4f31-47b8-8cb8-b0553d23d4fa",
+      "name": "Analyze PDF",
+      "credentials": {
+        "openAiApi": {
+          "id": "Psbw9TPc9wKYxJbo",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot8066520918:AAFUYS8AuH5LXoV4VZMgwgyfC-PqZeiz1Gc/getFile?file_id={{ $json.file_id }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        60
+      ],
+      "id": "6a394c93-d2ff-4610-a708-687d2230e1fa",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.pdf.co/v1/file/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "chamiduudara321@gmail.com_kKybk2m6sjvbOwKq0Q15dmFmiWlaRGPiTHNU097yrjjNoh9jNk3BVhpeNe3E4u4c"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        160
+      ],
+      "id": "f85c7924-8c6f-429b-839c-4eb88b9a2815",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot8066520918:AAFUYS8AuH5LXoV4VZMgwgyfC-PqZeiz1Gc/{{ $json.result.file_path }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        180
+      ],
+      "id": "99316c6c-3a84-4a09-a1e5-29474a1bdd6c",
+      "name": "PDF download"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.pdf.co/v1/pdf/convert/to/text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "chamiduudara321@gmail.com_kKybk2m6sjvbOwKq0Q15dmFmiWlaRGPiTHNU097yrjjNoh9jNk3BVhpeNe3E4u4c"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"url\": \"{{ $json.url }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        180
+      ],
+      "id": "7fdc964e-9e93-41a0-bd4c-c0cb9cc7e5d9",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        200
+      ],
+      "id": "adffed36-8f6e-46c8-b1ab-9885505b168d",
+      "name": "Extract Text"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}\n{{ $json.message.content }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        580
+      ],
+      "id": "1015f76d-e60f-42f3-a9f8-69e847b3fa7c",
+      "name": "Send a text message",
+      "webhookId": "3ae6eae1-7546-4e87-b258-874a009896fb",
+      "credentials": {
+        "telegramApi": {
+          "id": "cXRRojxJIhjSBbqN",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $json.message;\nconst caption = message?.caption ?? \"\";\n\nreturn [\n  {\n    json: {\n      file_id: message?.document?.file_id,\n      caption: caption,\n      file_name: message?.document?.file_name,\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        -40
+      ],
+      "id": "c5f09d13-e73b-44ce-a6bc-5e9cf09ebca6",
+      "name": "PDF/Query"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agent input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PDF/Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Audio": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Generate Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Audio": {
+      "main": [
+        [
+          {
+            "node": "Telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Analyze Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Image": {
+      "main": [
+        [
+          {
+            "node": "Format Image Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Image Output": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BTC Price Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Github Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Drive": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze PDF": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "PDF download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF download": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Extract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text": {
+      "main": [
+        [
+          {
+            "node": "Analyze PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF/Query": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analyze PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "589a17e5-f637-4af4-8c47-59b572bb32e0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f79746b4424f8d5d6a4a18a57f32b7f1e0ada6adce10eea0fa00a1f8c7fe5e12"
+  },
+  "id": "4QxxhsbD8CoVpVa6",
+  "tags": []
+}

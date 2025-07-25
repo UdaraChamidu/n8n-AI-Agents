@@ -1,0 +1,201 @@
+{
+  "name": "Automate_Blogging",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 18
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        -48
+      ],
+      "id": "ed4e15b2-449b-448f-823e-f5ff150e6734",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://newsdata.io/api/1/news",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "pub_60711b401eae48c5b22eeb9166431643"
+            },
+            {
+              "name": "category",
+              "value": "technology"
+            },
+            {
+              "name": "language",
+              "value": "en"
+            },
+            {
+              "name": "size",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "72726d63-f14e-479b-b8a7-978423043a33",
+      "name": "Get News"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a blog writer. Write a short blog post in Markdown using the following news:\n\nTitle: {{ $json.results[0].title }}\nContent: {{ $json.results[0].description }}\nCategory: {{ $json.results[0].category }}\nCountry: {{ $json.results[0].country }}\nURL: {{ $json.results[0].source_url }}\nDate: {{ $json.results[0].pubDate }}\n\nMake it short, include a catchy heading, and write in tech blog style.\n"
+            }
+          ]
+        },
+        "jsonOutput": "=MarkdownContent",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        192,
+        -48
+      ],
+      "id": "bf53304c-713d-4ebc-b167-8a02bfb5a190",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "v9s2wHnK9Qxg2Nvb",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const title = $input.first().json.message.content.title\nconst date = new Date().toISOString().split(\"T\")[0];\nconst summary = $json.description || \"No summary available.\";\nconst url = $json.link || \"https://example.com\";\nconst category = $json.category || \"Technology\";\nconst country = $json.country || \"Global\";\nconst content = $json.generatedBlogPost || \"AI-generated blog content goes here.\";\n\nconst markdown = `---\ntitle: \"${title}\"\ndate: \"${date}\"\nsummary: \"${summary}\"\ncategory: \"${category}\"\ncountry: \"${country}\"\n---\n\n${content}\n\n[Read more](${url})\n`;\n\nreturn [\n  {\n    json: {\n      fileName: `public/posts/${title.replace(/[^a-zA-Z0-9]/g, \"-\").toLowerCase()}.md`,\n      fileContent: markdown,\n      title,\n      url,\n      category,\n      country,\n      date\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -48
+      ],
+      "id": "1884b0b6-826d-4fab-9ef6-863990b6a3fa",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "https://github.com/UdaraChamidu",
+          "mode": "url"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "https://github.com/UdaraChamidu/My-Portfolio",
+          "mode": "url"
+        },
+        "filePath": "={{ $json.fileName }}",
+        "fileContent": "=✅ Blog Auto Published\n\n📂 File: {{ $json.fileName }}\n📅 Date: {{ $json.date }}\n📌 Title: {{ $json.title }}\n🔗 Source: {{ $json.url }}\n🌍 Country: {{ $json.country }}\n🏷️ Category: {{ $json.category }}\n",
+        "commitMessage": "=NEWS: {{ $json.date }} {{ $json.fileName }}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        -48
+      ],
+      "id": "0436bea6-2ffe-4859-8614-28d453d3517c",
+      "name": "Create a file",
+      "webhookId": "36c12126-3846-4b1d-a1d2-577cef4581c0",
+      "credentials": {
+        "githubApi": {
+          "id": "UEtZLvuTpdRaM97W",
+          "name": "GitHub account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get News": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Create a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a file": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "43d60fc1-4b30-4a35-8bfd-dcfb4cad8c9e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "52158e03430aa23dffc945d4cb5143e6efd9b70bf2ebdb9457f1ddc63d36fc4b"
+  },
+  "id": "BNqYs0KY8gp0zRkN",
+  "tags": []
+}
